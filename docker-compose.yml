@@ -57,8 +57,10 @@ services:
       S3_BUCKET: downloads
       S3_ADDRESSING_STYLE: path
     depends_on:
-      - rabbitmq
-      - minio
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
     volumes:
       - ./data/downloads:/data/downloads
     networks:
@@ -77,9 +79,17 @@ services:
       RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
       RABBITMQ_QUEUE: download.tasks
+      RESULTS_QUEUE: download.results
+      # S3 / MinIO
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_BUCKET: downloads
     depends_on:
       rabbitmq:
         condition: service_healthy
+      minio:
+        condition: service_started
     networks:
       - ytdlp-net
 
